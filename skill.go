@@ -28,7 +28,8 @@ import (
 //设置集群地址，最好内外IP,利用同一个ip，不同端口的cookie一样
 //var hostArray= []string{"192.168.1.190","192.168.1.190"} // 本机的内网ip,通过common.GetIntranceIp()可以获取
 //var localHost = "" // 本机ip
-var hostArray= []string{"127.0.0.1","192.168.1.190"} // 本机的内网ip,通过common.GetIntranceIp()可以获取
+//var hostArray= []string{"127.0.0.1","192.168.1.190"} // 本机的内网ip,通过common.GetIntranceIp()可以获取
+var hostArray= []string{"172.16.0.3","172.16.0.13"} // 本机的内网ip,通过common.GetIntranceIp()可以获取
 var localHost = "" // 本机ip
 
 var port = "8083"
@@ -205,8 +206,7 @@ func GetCurl(hostUrl string,request *http.Request)(response *http.Response,body 
 
 //统一验证拦截器，每个接口都需要提前验证
 func Auth(w http.ResponseWriter, r *http.Request) error {
-
-	//w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	//添加基于cookie的权限验证
 	err := CheckUserInfo(r)
 	if err != nil {
@@ -254,7 +254,7 @@ func checkInfo(checkStr string, signStr string) bool {
 
 //执行正常业务逻辑
 func Check(w http.ResponseWriter,r *http.Request)  {
-	//w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	//执行正常业务逻辑
 	fmt.Println("执行check！")
 	queryForm,err:=url.ParseQuery(r.URL.RawQuery)
@@ -338,7 +338,7 @@ func main() {
 		fmt.Println(err)
 	}
 	localHost=localIp
-
+	GetOneIp = localIp
 	fmt.Println(localHost)
 
 	rabbitMqValidate =rabbitmq.NewRabbitMQSimple("" +"mqSimpleProduct")

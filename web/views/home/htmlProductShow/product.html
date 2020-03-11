@@ -961,7 +961,11 @@
             }
         }
         if (getCookie("uid")==null) {
-            location.href = "http://127.0.0.1"+redirectUrl;
+            // var wurl,temp;
+            // wurl = window.location.host;
+            // temp = wurl.split(':');
+            // location.href = "http://"+temp[0]+":8081"+redirectUrl;
+            location.href = redirectUrl;
         }
         function rushToBuy() {
             var productId = document.getElementById("productId").value;
@@ -977,7 +981,12 @@
                 // ie6,ie5
                 xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
             }
-            request_url = "http://127.0.0.1:8083/check?productID="+productId
+            var wurl,temp;
+            wurl = window.location.host;
+            temp = wurl.split(':');
+            //request_url = "http://"+temp[0]+":8083"+"/check?productID="+productId;
+            request_url = "http://"+temp[0]+"/api/check?productID="+productId;
+            //request_url ="http://"+window.location.host+"/check?productID="+productId
             //request_url = "http://129.204.49.177:8083/check?procuctID="+productId
 
             xmlHttp.onreadystatechange = function(){
