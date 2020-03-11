@@ -32,6 +32,18 @@ GOOS=linux GOARCH=amd64 go build productMain.go
 
 nohup  ./main > run.log 2>&1 &
 
+nohup  ./main > main.log 2>&1 &
+
+nohup  ./skill> skill.log 2>&1 &
+
+nohup  ./getOne> getOne.log 2>&1 &
+
+nohup  ./consume> consume.log 2>&1 &
+
+ps aux|grep main
+
+ps aux|grep skill
+
 ps aux |grep "test.sh"  #a:显示所有程序  u:以用户为主的格式来显示   x:显示所有程序，不以终端机来区分
 ps -ef |grep "test.sh"  #-e显示所有进程。-f全格式。
 
@@ -1353,6 +1365,8 @@ func main() {
 ```
 ## 4、项目实践
 
+### 1、注意事项
+
 cmd可以用go build打包方法，解决模板路径问题，直接在idea编辑器则需要设置打包路径，如图所示
 
 ![](C:\Users\Administrator\Desktop\go语言\go\go项目\images\23.png)
@@ -1363,11 +1377,9 @@ cmd可以用go build打包方法，解决模板路径问题，直接在idea编�
 
 ![](C:\Users\Administrator\Desktop\go语言\go\go项目\images\24.png)
 
-skill.go
+### 2、skill.go
 
 ```
-
-
 /**
 * @program: Go
 *
@@ -1397,6 +1409,7 @@ import (
 //var hostArray= []string{"192.168.1.190","192.168.1.190"} // 本机的内网ip,通过common.GetIntranceIp()可以获取
 //var localHost = "" // 本机ip
 var hostArray= []string{"127.0.0.1","192.168.1.190"} // 本机的内网ip,通过common.GetIntranceIp()可以获取
+//var hostArray= []string{"172.16.0.3","172.16.0.13"} // 本机的内网ip,通过common.GetIntranceIp()可以获取
 var localHost = "" // 本机ip
 
 var port = "8083"
@@ -1573,8 +1586,7 @@ func GetCurl(hostUrl string,request *http.Request)(response *http.Response,body 
 
 //统一验证拦截器，每个接口都需要提前验证
 func Auth(w http.ResponseWriter, r *http.Request) error {
-
-	//w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	//添加基于cookie的权限验证
 	err := CheckUserInfo(r)
 	if err != nil {
@@ -1622,7 +1634,7 @@ func checkInfo(checkStr string, signStr string) bool {
 
 //执行正常业务逻辑
 func Check(w http.ResponseWriter,r *http.Request)  {
-	//w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	//执行正常业务逻辑
 	fmt.Println("执行check！")
 	queryForm,err:=url.ParseQuery(r.URL.RawQuery)
@@ -1706,7 +1718,7 @@ func main() {
 		fmt.Println(err)
 	}
 	localHost=localIp
-
+	GetOneIp = localIp
 	fmt.Println(localHost)
 
 	rabbitMqValidate =rabbitmq.NewRabbitMQSimple("" +"mqSimpleProduct")
@@ -1726,7 +1738,7 @@ func main() {
 
 ```
 
-getOne.go
+### 3、getOne.go
 
 ```
 /**
@@ -1802,9 +1814,11 @@ func main() {
 }
 
 
+
+
 ```
 
-consume.go
+### 4、consume.go
 
 ```
 /**
@@ -1850,7 +1864,7 @@ func main()  {
 
 ```
 
-main.go
+### 5、main.go
 
 ```
 /**
@@ -1965,7 +1979,7 @@ func main()  {
 	}
 	//6.启动服务
 	app.Run(
-		iris.Addr("0.0.0.0:80"),
+		iris.Addr("0.0.0.0:8081"),
 		iris.WithoutServerError(iris.ErrServerClosed),
 		iris.WithOptimizations,
 	)
@@ -1973,7 +1987,7 @@ func main()  {
 }
 ```
 
-product.html
+### 6、product.html
 
 ```
 <!DOCTYPE html>
@@ -2939,7 +2953,11 @@ product.html
             }
         }
         if (getCookie("uid")==null) {
-            location.href = "http://127.0.0.1"+redirectUrl;
+            // var wurl,temp;
+            // wurl = window.location.host;
+            // temp = wurl.split(':');
+            // location.href = "http://"+temp[0]+":8081"+redirectUrl;
+            location.href = redirectUrl;
         }
         function rushToBuy() {
             var productId = document.getElementById("productId").value;
@@ -2955,7 +2973,12 @@ product.html
                 // ie6,ie5
                 xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
             }
-            request_url = "http://127.0.0.1:8083/check?productID="+productId
+            var wurl,temp;
+            wurl = window.location.host;
+            temp = wurl.split(':');
+            //request_url = "http://"+temp[0]+":8083"+"/check?productID="+productId;
+            request_url = "http://"+temp[0]+"/api/check?productID="+productId;
+            //request_url ="http://"+window.location.host+"/check?productID="+productId
             //request_url = "http://129.204.49.177:8083/check?procuctID="+productId
 
             xmlHttp.onreadystatechange = function(){
@@ -3096,6 +3119,123 @@ product.html
 
 ```
 
-项目地址：
+### 7、nginx配置
+
+Nginx完美解决前后端分离端口号不同导致的跨域问题
+笔者在做前后端分离系统时，出现了很多坑，比如前后端的url域名相同，但是端口号不同。例如前端页面为：http://127.0.0.1:8081， 后端api根路径为 http://127.0.0.1:8083 ，这样就导致跨域问题，前端设置的request header或者cookies后端接收不到，这是很蛋疼的问题。用nginx配置端口转发完美解决。首先在本机安装nginx，前端配置端口号为8081,大致配置如下：
+
+```
+server {
+  listen 80;
+  server_name www.iris.com;
+  location / {
+    proxy_pass http://127.0.0.1:8081;
+    #proxy_redirect off;
+      proxy_http_version    1.1;
+    proxy_cache_bypass    $http_upgrade;
+    proxy_set_header Upgrade            $http_upgrade;
+    proxy_set_header Connection         "upgrade";
+    proxy_set_header Host               $host;
+    proxy_set_header X-Real-IP          $remote_addr;
+    proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto  $scheme;
+    proxy_set_header X-Forwarded-Host   $host;
+    proxy_set_header X-Forwarded-Port   $server_port;
+  }
+  location /api/ {
+    proxy_pass http://127.0.0.1:8083/;
+    #proxy_redirect  default;
+
+  }
+  #access_log    /home/wwwlogs/go-blog.access.log;
+}
+```
+
+### 8、部署在linux系统上
+
+打开cmd,进入当前的项目路径，分别运行如下命令
+
+SET GOOS=linux
+
+SET GOARCH=amd64
+
+go build main.go
+
+go build getOne.go
+
+go build skill.go
+
+go build consume.go
+
+执行上述命令会生成各个linux可执行文件，通过ftp等工具连接linux服务器，上传如下文件,其中log文件是nohup后台运行生成的
+
+![1583906918893](C:\Users\Administrator\Desktop\go语言\go\go项目\images\25.png)
+
+登录服务器终端，执行如下命令
+
+cd /www/Go/src/iris_demo/
+
+chmod 777 main && chmod  777 skill && chmod 777 getOne && chmod 777 consume
+
+nohup  ./main > main.log 2>&1 &
+
+nohup  ./skill> skill.log 2>&1 &
+
+nohup  ./getOne> getOne.log 2>&1 &
+
+nohup  ./consume> consume.log 2>&1 &
+
+如果当前进程以启动，例如main进程在服务端已经启动，请先kill掉进程，否则无法上传：
+
+ps aux|grep main
+
+kill -9 9984（其中9984为pid）
+
+修改nginx.conf，绑定域名
+
+```
+ server {
+        listen       80;
+        server_name  shop.1024.company;
+        gzip on;
+        gzip_min_length 1k;
+        gzip_buffers 4 16k;
+        #gzip_http_version 1.0;
+        gzip_comp_level 2;
+        gzip_types text/plain application/javascript application/x-javascript text/css application/xml text/javascript application/x-httpd-php image/jpeg image/gif image/png;
+        gzip_vary off;
+        gzip_disable "MSIE [1-6]\.";
+        location / {
+            proxy_pass http://127.0.0.1:8081;
+            #proxy_redirect off;
+            proxy_http_version    1.1;
+            proxy_cache_bypass    $http_upgrade;
+            proxy_set_header Upgrade            $http_upgrade;
+            proxy_set_header Connection         "upgrade";
+            proxy_set_header Host               $host;
+            proxy_set_header X-Real-IP          $remote_addr;
+            proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto  $scheme;
+            proxy_set_header X-Forwarded-Host   $host;
+            proxy_set_header X-Forwarded-Port   $server_port;
+        }
+        location /api/ {
+            proxy_pass http://127.0.0.1:8083/;
+            #proxy_redirect  default;
+
+        }
+
+    }
+```
+
+重启nginx，进入nginx的安装路径的sbin文件，执行
+
+./nginx -s reload
+
+### 9、预览地址
+
+<http://shop.1024.company/html/product.html> 
+
+### 10、项目地址：
 
 <https://github.com/18318553760/iris_demo> 
