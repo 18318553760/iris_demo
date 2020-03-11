@@ -17,11 +17,10 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-
 	"sync"
 )
 //设置集群地址，最好内外IP,利用同一个ip，不同端口的cookie一样
-var hostArray= []string{"192.168.1.190","192.168.1.190"} // 本机的内网ip,通过common.GetIntranceIp()可以获取
+var hostArray= []string{"172.16.0.3","172.16.0.13"} // 本机的内网ip,通过common.GetIntranceIp()可以获取
 var localHost = "" // 本机ip
 //var hostArray= []string{"127.0.0.1","127.0.0.1"} // 本机的内网ip,通过common.GetIntranceIp()可以获取
 //var localHost = "127.0.0.1" // 本机ip
@@ -131,6 +130,7 @@ func GetDataFromOtherMap(host string,request *http.Request) bool  {
 	if err !=nil {
 		return false
 	}
+	fmt.Println("机器访问2")
 	//判断状态
 	if response.StatusCode == 200 {
 		if string(body) == "true" {
@@ -244,6 +244,7 @@ func main() {
 		fmt.Println(err)
 	}
 	localHost=localIp
+	fmt.Println(localHost)
 
 	filter := common.NewFilter()
 	filter.RegisterFilterUri("/check",Auth) // 注册函数，把url放在拦截器，访问/check会被拦截

@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
 	"sync"
 )
 
@@ -38,13 +39,16 @@ func GetOneProduct() bool {
 	defer mutex.Unlock()
 	count += 1
 	//判断数据是否超限
-	if count%100 == 0 {
+	//fmt.Println("==============")
+	//fmt.Println(count%100)
+	//fmt.Println("==============")
+	//if count%100 == 0 {
 		if sum < productNum {
 			sum += 1
 			fmt.Println(sum)
 			return true
 		}
-	}
+	//}
 	return false
 
 }

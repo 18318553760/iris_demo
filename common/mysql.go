@@ -7,7 +7,7 @@ import (
 
 //创建mysql 连接
 func NewMysqlConn() (db *sql.DB, err error) {
-	db, err = sql.Open("mysql", "root:root@tcp(127.0.0.1:3306)/iris_blog?charset=utf8")
+	db, err = sql.Open("mysql", "root:safe5698@tcp(129.204.49.177:3306)/iris_demo?charset=utf8")
 	return
 }
 

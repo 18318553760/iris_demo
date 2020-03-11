@@ -61,12 +61,45 @@ func (c *UserController) GetLogin() mvc.View {
 	}
 }
 
+//func (c *UserController) PostLogin() mvc.Response {
+//	//1.获取用户提交的表单信息
+//	var (
+//		userName = c.Ctx.FormValue("userName")
+//		password = c.Ctx.FormValue("password")
+//
+//	)
+//	//2、验证账号密码正确
+//	user, isOk := c.Service.IsPwdSuccess(userName, password)
+//	if !isOk {
+//		return mvc.Response{
+//			Path: "/user/login",
+//		}
+//	}
+//
+//	//3、写入用户ID到cookie中
+//	//tool.GlobalCookie(c.Ctx, "uid", strconv.FormatInt(user.ID, 10))
+//	//c.Session.Set("userID",strconv.FormatInt(user.ID,10))
+//
+//	//3、写入用户ID到cookie中 用cookie代替session集群
+//	tool.GlobalCookie(c.Ctx, "uid", strconv.FormatInt(user.ID, 10))
+//	uidByte := []byte(strconv.FormatInt(user.ID, 10))
+//	uidString, err := encrypt.EnPwdCode(uidByte)
+//	if err != nil {
+//		fmt.Println(err)
+//	}
+//	//写入用户浏览器
+//	tool.GlobalCookie(c.Ctx, "sign", uidString)
+//
+//	return mvc.Response{
+//		Path: "/product/detail",
+//	}
+//
+//}
 func (c *UserController) PostLogin() mvc.Response {
 	//1.获取用户提交的表单信息
 	var (
 		userName = c.Ctx.FormValue("userName")
 		password = c.Ctx.FormValue("password")
-
 	)
 	//2、验证账号密码正确
 	user, isOk := c.Service.IsPwdSuccess(userName, password)
@@ -77,10 +110,6 @@ func (c *UserController) PostLogin() mvc.Response {
 	}
 
 	//3、写入用户ID到cookie中
-	//tool.GlobalCookie(c.Ctx, "uid", strconv.FormatInt(user.ID, 10))
-	//c.Session.Set("userID",strconv.FormatInt(user.ID,10))
-
-	//3、写入用户ID到cookie中 用cookie代替session集群
 	tool.GlobalCookie(c.Ctx, "uid", strconv.FormatInt(user.ID, 10))
 	uidByte := []byte(strconv.FormatInt(user.ID, 10))
 	uidString, err := encrypt.EnPwdCode(uidByte)
@@ -91,7 +120,7 @@ func (c *UserController) PostLogin() mvc.Response {
 	tool.GlobalCookie(c.Ctx, "sign", uidString)
 
 	return mvc.Response{
-		Path: "/product/detail",
+		Path: "/html/product.html",
 	}
 
 }
